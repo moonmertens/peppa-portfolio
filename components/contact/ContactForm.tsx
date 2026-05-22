@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { submitContactForm } from '@/app/contact/actions'
+import { submitContactForm } from '@/app/(site)/contact/actions'
 
 interface ContactFormProps {
   heading?: string

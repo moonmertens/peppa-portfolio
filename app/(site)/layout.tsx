@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { Playfair_Display, DM_Sans } from "next/font/google"
-import "./globals.css"
+import "../globals.css"
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { JsonLd } from "@/components/seo/JsonLd"
@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function RootLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode

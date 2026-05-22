@@ -4,10 +4,6 @@ export default defineType({
   name: "aboutPage",
   title: "About Page",
   type: "document",
-  // Singleton enforcement: structure builder opens a fixed documentId.
-  // __experimental_actions restricts available actions to update and publish only.
-  // @ts-expect-error __experimental_actions is not in the public TS types but works at runtime
-  __experimental_actions: ["update", "publish"],
   fields: [
     defineField({
       name: "heading",

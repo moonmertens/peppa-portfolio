@@ -4,9 +4,6 @@ export default defineType({
   name: "siteSettings",
   title: "Site Settings",
   type: "document",
-  // Singleton enforcement: structure builder opens a fixed documentId.
-  // @ts-expect-error __experimental_actions is not in the public TS types but works at runtime
-  __experimental_actions: ["update", "publish"],
   fields: [
     defineField({
       name: "artistName",
