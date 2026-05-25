@@ -58,6 +58,17 @@ export default defineType({
       title: "Contact Form Heading",
       type: "string",
     }),
+    defineField({
+      name: "subscribePageHeading",
+      title: "Subscribe Page Heading",
+      type: "string",
+    }),
+    defineField({
+      name: "subscribePageDescription",
+      title: "Subscribe Page Description",
+      type: "text",
+      rows: 4,
+    }),
   ],
   preview: {
     select: {

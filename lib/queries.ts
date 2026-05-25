@@ -52,6 +52,42 @@ export const cvEntriesQuery = `
   }
 `
 
+export const shopPiecesQuery = `
+  *[_type == "project"] {
+    _id,
+    title,
+    "pieces": pieces[availability == "available" && defined(price)] {
+      _key,
+      title,
+      image { ..., asset->{ _id, _type, metadata { dimensions { width, height, aspectRatio } } } },
+      medium,
+      price,
+      availability
+    }
+  }[count(pieces) > 0]
+`
+// Note: final numeric price filtering is done in JS after fetch to handle POA
+
+export const subscriptionTiersQuery = `
+  *[_type == "subscriptionTier"] | order(sortOrder asc) {
+    _id, name, description, displayPrice, stripePriceId, sortOrder
+  }
+`
+
+export const subscribePageSettingsQuery = `
+  *[_type == "siteSettings"][0]{
+    subscribePageHeading,
+    subscribePageDescription
+  }
+`
+
+export const piecesByProjectQuery = `
+  *[_type == "project" && _id in $projectIds] {
+    _id,
+    "pieces": pieces[] { _key, price, availability }
+  }
+`
+
 export const projectBySlugQuery = `
   *[_type == "project" && slug.current == $slug][0]{
     _id,

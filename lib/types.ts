@@ -78,3 +78,23 @@ export interface CvEntry {
   year: number
   description?: string
 }
+
+export interface ShopPiece {
+  _key: string
+  projectId: string
+  title: string
+  image: SanityImageAsset
+  medium?: string
+  price: string
+  availability: 'available'
+  imageUrl: string // pre-built server-side
+}
+
+export interface SubscriptionTier {
+  _id: string
+  name: string
+  description?: string
+  displayPrice?: string
+  stripePriceId: string
+  sortOrder?: number
+}

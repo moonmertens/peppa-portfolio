@@ -4,6 +4,7 @@ import "../globals.css"
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { JsonLd } from "@/components/seo/JsonLd"
+import { CartProvider } from "@/lib/cart/CartContext"
 import { sanityFetch } from "@/sanity/sanity.client"
 import { siteSettingsQuery } from "@/lib/queries"
 import type { SiteSettings } from "@/lib/types"
@@ -77,11 +78,13 @@ export default async function SiteLayout({
   return (
     <html lang="en" className={`${playfairDisplay.variable} ${dmSans.variable}`}>
       <body>
-        <a href="#main-content" className="skip-link">Skip to content</a>
-        <JsonLd id="json-ld-person" data={personSchema} />
-        <Header artistName={settings.artistName} shopUrl={settings.externalShopUrl} />
-        {children}
-        <Footer socialLinks={settings.socialLinks} artistName={settings.artistName} />
+        <CartProvider>
+          <a href="#main-content" className="skip-link">Skip to content</a>
+          <JsonLd id="json-ld-person" data={personSchema} />
+          <Header artistName={settings.artistName} shopUrl={settings.externalShopUrl} />
+          {children}
+          <Footer socialLinks={settings.socialLinks} artistName={settings.artistName} />
+        </CartProvider>
       </body>
     </html>
   )

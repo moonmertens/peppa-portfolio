@@ -19,6 +19,7 @@ Before you start, make sure you have the following installed and ready:
 - A **GitHub account** — needed for Vercel to pull your code
 - A **Vercel account** — free at [vercel.com](https://vercel.com)
 - A **Sanity account** — free at [sanity.io](https://sanity.io)
+- A **Stripe account** — free at [stripe.com](https://stripe.com) (needed for the shop and subscriptions)
 
 ---
 
@@ -75,7 +76,24 @@ Keep this key — you will use it in the next step and again when setting up Ver
 
 ---
 
-### Step 4: Configure Environment Variables Locally
+### Step 4: Create a Stripe Account
+
+The site uses Stripe to process payments for artwork purchases and subscriptions. Stripe has no monthly fee — they only charge per transaction (1.7% + 30¢ domestic AUD, 3.5% + 30¢ international).
+
+1. Go to [dashboard.stripe.com/register](https://dashboard.stripe.com/register) and create an account.
+2. Complete the onboarding (business name, country, bank details for payouts). Set country to **Singapore** — the checkout charges in SGD.
+3. You can start in **test mode** and activate live payments later once everything is verified.
+
+To get the API key:
+
+1. In Stripe Dashboard, click **Developers** (top right) → **API keys**.
+2. Copy the **Secret key** (starts with `sk_test_...` in test mode, `sk_live_...` in production).
+
+Keep this key — you will use it in the next step and again when deploying to Vercel.
+
+---
+
+### Step 5: Configure Environment Variables Locally
 
 The app reads configuration from a `.env.local` file. This file is never committed to git (it is in `.gitignore`).
 
@@ -94,6 +112,7 @@ NEXT_PUBLIC_SANITY_API_VERSION=2024-01-01
 SANITY_API_READ_TOKEN=
 
 WEB3FORMS_ACCESS_KEY=your-web3forms-key-here
+STRIPE_SECRET_KEY=sk_test_your-key-here
 
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
@@ -107,11 +126,12 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 | `NEXT_PUBLIC_SANITY_API_VERSION` | The Sanity API date version — leave as `2024-01-01` |
 | `SANITY_API_READ_TOKEN` | Optional — only needed if you add private/draft content fetching later; leave blank for now |
 | `WEB3FORMS_ACCESS_KEY` | The key from Step 3 |
+| `STRIPE_SECRET_KEY` | The secret key from Step 4 — server-only, never exposed to the browser |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` for local dev; the Vercel URL in production |
 
 ---
 
-### Step 5: Test Locally
+### Step 6: Test Locally
 
 1. Install dependencies:
 
@@ -132,13 +152,21 @@ npm run dev
 5. In the Studio, create at minimum:
    - A **Site Settings** document (artist name is required — the site will not render correctly without it)
    - An **About Page** document
-   - At least one **Project** with a cover image
+   - At least one **Project** with a cover image and at least one piece with a numeric price and availability set to "Available"
+
+6. Test the shop features:
+   - Visit [http://localhost:3000/shop](http://localhost:3000/shop) — your available pieces should appear.
+   - Click "Add to Cart" on a piece → the cart drawer should slide open.
+   - Click "Checkout" → you should be redirected to Stripe's test checkout page.
+   - Use Stripe's test card: `4242 4242 4242 4242`, any future expiry, any CVC, any name/address.
+   - After completing the test payment, you should land on the success page and the cart should be empty.
+   - Visit [http://localhost:3000/subscribe](http://localhost:3000/subscribe) — will show "Subscription tiers coming soon" until you create tiers (see Step 9).
 
 This gives you real content to look at before deploying.
 
 ---
 
-### Step 6: Deploy to Vercel
+### Step 7: Deploy to Vercel
 
 1. Go to [vercel.com](https://vercel.com) and log in.
 2. Click **"Add New Project"** and select **"Import Git Repository"**.
@@ -150,6 +178,7 @@ This gives you real content to look at before deploying.
    - `NEXT_PUBLIC_SANITY_API_VERSION` — `2024-01-01`
    - `SANITY_API_READ_TOKEN` — leave blank unless you set a token
    - `WEB3FORMS_ACCESS_KEY` — your Web3Forms key
+   - `STRIPE_SECRET_KEY` — your Stripe secret key (use `sk_test_...` for initial testing, switch to `sk_live_...` when going live)
    - `NEXT_PUBLIC_SITE_URL` — **important:** set this to the Vercel URL you expect, e.g., `https://artistname.vercel.app`. If you do not know it yet, you can update this after the first deploy.
 
 5. Click **Deploy**. Vercel will build and deploy the site. This takes about a minute.
@@ -162,7 +191,7 @@ This gives you real content to look at before deploying.
 
 ---
 
-### Step 7: Update Sanity CORS for Production
+### Step 8: Update Sanity CORS for Production
 
 The Studio will not load on the live Vercel URL until you whitelist it in Sanity.
 
@@ -177,7 +206,7 @@ The artist can now log into the Studio at `https://artistname.vercel.app/studio`
 
 ---
 
-### Step 8: Seed Initial Content
+### Step 9: Seed Initial Content
 
 Before handing off to the artist, create enough content for the site to look correct.
 
@@ -186,15 +215,58 @@ Before handing off to the artist, create enough content for the site to look cor
    - Artist name (required)
    - Tagline
    - Social links (Instagram, etc.)
-   - External shop URL if applicable
    - Contact form heading (e.g., "Get in touch")
+   - Subscribe page heading (e.g., "Support My Work") — optional
+   - Subscribe page description — optional
 3. Create the **About Page** document:
    - Heading (e.g., "About")
    - Bio text
    - Artist photo
 4. Create **2–3 CV entries** to populate the CV page (one exhibition, one education entry).
-5. Create **2–3 Projects**, each with at least one piece that has an image.
-6. Visit the live site and verify all pages render correctly: Home, a project detail page, About, CV, Contact.
+5. Create **2–3 Projects**, each with at least one piece that has an image, a price, and availability set to "Available".
+6. Visit the live site and verify all pages render correctly: Home, a project detail page, About, CV, Contact, Shop.
+
+---
+
+### Step 10: Set Up Subscription Tiers (Optional)
+
+If the artist wants to offer subscriptions (patronage, supporter tiers, etc.), this is a two-part process:
+
+**In Stripe Dashboard:**
+
+1. Go to **Products** → **Add product**.
+2. Name it (e.g., "Monthly Supporter", "Patron Tier").
+3. Set pricing to **Recurring** → choose interval (monthly/yearly) → set amount in AUD.
+4. Save. Click into the product → under **Pricing**, copy the **Price ID** (starts with `price_...`).
+5. Repeat for each tier you want to offer.
+
+**In Sanity Studio:**
+
+1. Go to the Studio → **Subscription Tiers** in the sidebar.
+2. Click **+** to create a new tier.
+3. Fill in:
+   - **Name**: e.g., "Monthly Supporter"
+   - **Display Price**: e.g., "$10/month" (free text — this is what visitors see)
+   - **Description**: what the subscriber gets or a thank-you message
+   - **Stripe Price ID**: paste the `price_...` ID from Stripe
+   - **Sort Order**: 1, 2, 3... (controls display order on the page)
+4. Publish.
+
+The tier will now appear on the `/subscribe` page.
+
+---
+
+### Step 11: Go Live with Stripe Payments
+
+When ready to accept real money (not just test payments):
+
+1. In Stripe Dashboard → **Settings** → complete account activation (identity verification, bank account for payouts).
+2. Toggle off test mode (top-right switch in Stripe Dashboard).
+3. Get the **live** secret key (`sk_live_...`) from Developers → API keys.
+4. In Vercel → project **Settings → Environment Variables**, update `STRIPE_SECRET_KEY` with the live key.
+5. If you created subscription products in test mode, you must recreate them in live mode (Stripe keeps test and live products separate). Update the Stripe Price IDs in Sanity Studio accordingly.
+6. Trigger a redeploy in Vercel.
+7. Test with a real card (a small-amount purchase you can refund immediately).
 
 ---
 
@@ -221,6 +293,7 @@ Once you are in, you will see a sidebar on the left with sections for:
 - (a divider line)
 - **Projects**
 - **CV Entries**
+- **Subscription Tiers**
 
 ---
 
@@ -322,14 +395,16 @@ Entries are automatically grouped by type on the CV page, and sorted with the mo
 
 #### Updating Site Settings
 
-Site Settings controls global information that appears across the whole website — your name, tagline, social media links, and the link to your external shop.
+Site Settings controls global information that appears across the whole website — your name, tagline, social media links, and page headings.
 
 1. Click **Site Settings** in the left sidebar.
 2. Fill in or update the fields:
    - **Artist Name** (required) — your name as it appears in the header and footer.
    - **Tagline** — a short phrase that describes your work, shown in search results and the browser tab.
-   - **External Shop URL** — if you sell work through an external store (e.g., Etsy, your own Shopify), paste the full URL here. This makes the "Shop" link in the navigation go to that page. Leave it blank if you do not have a shop.
+   - **External Shop URL** — if you also sell work through an external store (e.g., Etsy), paste the full URL here. Otherwise leave blank.
    - **Contact Form Heading** — the heading shown at the top of the Contact page, e.g., "Get in touch" or "Say hello".
+   - **Subscribe Page Heading** — the heading on your Subscribe page, e.g., "Support My Work".
+   - **Subscribe Page Description** — optional paragraph shown below the heading on the Subscribe page explaining what supporters get.
 3. Click **Publish**.
 
 **Managing social links:**
@@ -341,6 +416,77 @@ Social links appear as icons in the footer.
 - To **reorder** links: drag them using the grip handle on the left.
 
 After making changes, click **Publish**.
+
+---
+
+### The Shop
+
+Your website has a built-in shop at `/shop`. It automatically shows all pieces that are marked **Available** and have a price set. You do not need to do anything special to "add" a piece to the shop — it happens automatically based on the fields you fill in.
+
+#### How a Piece Appears in the Shop
+
+For a piece to show up on the Shop page with an "Add to Cart" button, it needs:
+- **Availability** set to **Available**
+- **Price** set to a number (e.g., `450`)
+
+If you set the price to **POA** (Price on Application), the piece will still appear on the Shop page, but instead of "Add to Cart" it will show a "Contact to Purchase" button that sends visitors to the contact form.
+
+If availability is set to **Sold** or **Not for sale**, the piece will not appear on the Shop page at all.
+
+#### When Someone Buys a Piece
+
+1. You will receive a notification from Stripe (email) that a payment has been made.
+2. The buyer's shipping address is included in the Stripe payment details.
+3. Go to your Stripe Dashboard ([dashboard.stripe.com](https://dashboard.stripe.com)) to see the full order details, buyer's address, and payment status.
+4. **Important**: After confirming the sale, go to the Studio, open the project containing that piece, change the piece's **Availability** from "Available" to **"Sold"**, and click **Publish**. This removes it from the shop so nobody else can buy it.
+
+#### Viewing Your Orders and Payments
+
+All payment information is in your Stripe Dashboard — not in the Studio. To check orders:
+
+1. Go to [dashboard.stripe.com](https://dashboard.stripe.com) and log in.
+2. Click **Payments** in the left sidebar to see all completed payments.
+3. Click any payment to see the buyer's name, email, shipping address, and what they bought.
+4. Stripe sends your earnings to your connected bank account on a regular schedule (usually every few days).
+
+#### Refunding a Payment
+
+If you need to refund a buyer:
+
+1. In Stripe Dashboard, go to **Payments**.
+2. Find the payment and click on it.
+3. Click the **Refund** button in the top right.
+4. Choose full or partial refund and confirm.
+
+---
+
+### Subscriptions
+
+Your website has a `/subscribe` page where visitors can sign up for recurring support (like a monthly patronage). This is optional — if you have not set up any subscription tiers, the page will simply say "Subscription tiers coming soon."
+
+#### Managing Subscription Tiers
+
+Subscription tiers are managed in **two places**: Stripe (for the actual billing) and the Studio (for what visitors see on the page).
+
+**To add a new tier:**
+
+1. First, create the product in Stripe: go to [dashboard.stripe.com](https://dashboard.stripe.com) → **Products** → **Add product**. Give it a name, set pricing to **Recurring** (monthly or yearly), and set the amount. Save it, then copy the **Price ID** (starts with `price_...`).
+2. Then, go to the Studio → **Subscription Tiers** → click **+** to create a new tier.
+3. Fill in:
+   - **Name** — what visitors see, e.g., "Monthly Supporter"
+   - **Display Price** — free text shown on the card, e.g., "$10/month"
+   - **Description** — what the subscriber gets or a thank-you note
+   - **Stripe Price ID** — paste the `price_...` ID from Stripe
+   - **Sort Order** — a number controlling the order tiers appear (1 = first, 2 = second, etc.)
+4. Click **Publish**.
+
+**To remove a tier:** Delete or unpublish it in the Studio. You should also archive the corresponding product in Stripe Dashboard (Products → click the product → Archive).
+
+**To change a tier's price:** You cannot edit a Stripe price directly. Instead: create a new price in Stripe (on the same product), update the Stripe Price ID in the Studio tier document, and publish. Then archive the old price in Stripe.
+
+#### Viewing Your Subscribers
+
+Go to Stripe Dashboard → **Customers** to see who has subscribed, or **Subscriptions** to see all active subscriptions, their status, and billing history.
 
 ---
 
@@ -373,3 +519,13 @@ After making changes, click **Publish**.
 - Messages sent through the contact form on the website go directly to the email address set up with Web3Forms.
 - Check your spam/junk folder if you are not receiving messages.
 - You cannot see submitted messages inside the Studio — they arrive by email only.
+
+**About prices and currency:**
+- All prices on the site are in Singapore Dollars (SGD) and shown with a `$` symbol.
+- When you enter a price for a piece in the Studio, just enter the number (e.g., `450`). The website adds the `$` automatically.
+- Enter `POA` (Price on Application) if you do not want to show a price but still want the piece visible on the shop page with a "Contact to Purchase" option.
+
+**About shipping:**
+- When someone buys a piece, Stripe collects their shipping address at checkout. You will see this address in your Stripe Dashboard.
+- Shipping cost is not calculated automatically — you arrange shipping directly with the buyer after the sale. Many artists include shipping in the price or contact the buyer with a shipping quote.
+- Currently, buyers can ship to: Singapore, United States, Great Britain, Australia, Canada, New Zealand, Malaysia, and Japan. If you need to change this list, ask the developer.

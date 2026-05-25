@@ -9,6 +9,8 @@ import {
 import ReactDOM from 'react-dom'
 import Image from 'next/image'
 import type { Piece } from '@/lib/types'
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import type { CartItem } from '@/lib/cart/types'
 
 interface LightboxProps {
   pieces: Piece[]
@@ -17,6 +19,23 @@ interface LightboxProps {
   onClose: () => void
   onPrev: () => void
   onNext: () => void
+  projectId: string
+}
+
+function isNumericPrice(price: string): boolean {
+  const n = parseFloat(price)
+  return isFinite(n) && n > 0
+}
+
+function buildCartItem(piece: Piece, projectId: string, imageUrl: string): CartItem {
+  return {
+    id: `${projectId}__${piece._key}`,
+    projectId,
+    pieceKey: piece._key,
+    title: piece.title,
+    price: parseFloat(piece.price!),
+    imageUrl,
+  }
 }
 
 function AvailabilityBadge({ availability }: { availability?: Piece['availability'] }) {
@@ -84,6 +103,7 @@ export function Lightbox({
   onClose,
   onPrev,
   onNext,
+  projectId,
 }: LightboxProps) {
   const [mounted, setMounted] = useState(false)
   const [visible, setVisible] = useState(false)
@@ -456,6 +476,10 @@ export function Lightbox({
               >
                 Inquire
               </a>
+            )}
+
+            {piece?.availability === 'available' && piece?.price && isNumericPrice(piece.price) && (
+              <AddToCartButton item={buildCartItem(piece, projectId, imageUrl)} />
             )}
           </div>
         </div>

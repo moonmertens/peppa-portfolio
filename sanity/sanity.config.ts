@@ -7,7 +7,7 @@ import schemas from "./schemas"
 
 // All document types explicitly listed above the divider — excluded from the
 // auto-generated fallback list so they don't appear twice.
-const EXPLICITLY_LISTED_TYPES = new Set(["aboutPage", "siteSettings", "project", "cvEntry"])
+const EXPLICITLY_LISTED_TYPES = new Set(["aboutPage", "siteSettings", "project", "cvEntry", "subscriptionTier"])
 
 function structure(S: StructureBuilder) {
   return S.list()
@@ -53,6 +53,16 @@ function structure(S: StructureBuilder) {
           S.documentTypeList("cvEntry")
             .title("CV Entries")
             .defaultOrdering([{ field: "year", direction: "desc" }])
+        ),
+
+      // ── Subscription Tiers ─────────────────────────────────────────────
+      S.listItem()
+        .title("Subscription Tiers")
+        .schemaType("subscriptionTier")
+        .child(
+          S.documentTypeList("subscriptionTier")
+            .title("Subscription Tiers")
+            .defaultOrdering([{ field: "sortOrder", direction: "asc" }])
         ),
 
       S.divider(),

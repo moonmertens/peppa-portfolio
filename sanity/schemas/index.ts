@@ -4,6 +4,7 @@ import piece from "./piece"
 import aboutPage from "./aboutPage"
 import cvEntry from "./cvEntry"
 import siteSettings from "./siteSettings"
+import subscriptionTier from "./subscriptionTier"
 
 const schemas: SchemaTypeDefinition[] = [
   project,
@@ -11,6 +12,7 @@ const schemas: SchemaTypeDefinition[] = [
   aboutPage,
   cvEntry,
   siteSettings,
+  subscriptionTier,
 ]
 
 export default schemas

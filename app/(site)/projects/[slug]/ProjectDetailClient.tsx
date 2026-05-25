@@ -8,11 +8,13 @@ import type { ProjectDetail } from '@/lib/types'
 interface ProjectDetailClientProps {
   project: ProjectDetail
   pieceImageUrls: string[]
+  projectId: string
 }
 
 export function ProjectDetailClient({
   project,
   pieceImageUrls,
+  projectId,
 }: ProjectDetailClientProps) {
   const [openIndex, setOpenIndex] = useState(-1)
   const pieceButtonRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -65,6 +67,7 @@ export function ProjectDetailClient({
         onClose={handleClose}
         onPrev={handlePrev}
         onNext={handleNext}
+        projectId={projectId}
       />
     </>
   )

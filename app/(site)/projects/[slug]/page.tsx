@@ -174,6 +174,7 @@ export default async function ProjectDetailPage({
       <ProjectDetailClient
         project={project}
         pieceImageUrls={pieceImageUrls}
+        projectId={project._id}
       />
     </main>
   )
